@@ -27,6 +27,7 @@ import {
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
+import * as L10n from '@vscode/l10n';
 import * as Settings from '../common/settings-types';
 import * as Parser from './parser';
 import * as Types from './types';
@@ -36,6 +37,7 @@ import { resolvePathVariables } from '../common/helpers';
 
 const connection = createConnection(ProposedFeatures.all);
 const documentsManager = new TextDocuments(TextDocument);
+L10n.config({ uri: __dirname });
 
 let syncedSettings: Settings.SyncedSettings;
 let dependencyManager: DM.FileDependencyManager = new DM.FileDependencyManager();
@@ -76,7 +78,7 @@ connection.onDidChangeConfiguration(async () => {
         try {
             syncedSettings = await connection.workspace.getConfiguration('amxxpawn');
         } catch (e) {
-            connection.console.error(`Error fetching configuration: ${e}`);
+            connection.console.error(L10n.t('Error fetching configuration: {0}', String(e)));
             // Usa um objeto vazio como fallback para evitar crashes
             syncedSettings = { compiler: {} as Settings.CompilerSettings, language: {} as Settings.LanguageSettings };
         }
@@ -111,7 +113,7 @@ async function validateAndReparse(document: TextDocument): Promise<void> {
                 section: 'amxxpawn'
             });
         } catch (e) {
-            connection.console.error(`Could not fetch configuration: ${e}`);
+            connection.console.error(L10n.t('Could not fetch configuration: {0}', String(e)));
         }
     }
     reparseDocument(document);
@@ -286,13 +288,13 @@ function parseFile(fileUri: URI, content: string, data: Types.DocumentData, diag
                     const fileContent = FS.readFileSync(dependencyUri.fsPath).toString();
                     parseFile(dependencyUri, fileContent, depData, diagnostics, true);
                 } catch (e) {
-                    connection.console.error(`Failed to read dependency file ${dependency.uri}: ${e.message}`);
+                    connection.console.error(L10n.t('Failed to read dependency file {0}: {1}', dependency.uri, e.message));
                 }
             }
             data.resolvedInclusions.push({ uri: resolvedUri, descriptor: header });
         } else {
             myDiagnostics.push({
-                message: `Couldn't resolve include path '${header.filename}'. Check compiler include paths.`,
+                message: L10n.t("Couldn't resolve include path '{0}'. Check compiler include paths.", header.filename),
                 severity: header.isSilent ? DiagnosticSeverity.Information : DiagnosticSeverity.Error,
                 source: 'amxxpawn',
                 range: { start: header.start, end: header.end }

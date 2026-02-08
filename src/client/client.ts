@@ -10,6 +10,8 @@ import {
 } from 'vscode-languageclient/node';
 import * as Commands from './commands';
 
+const t = VSC.l10n.t;
+
 let client: LanguageClient;
 let diagnosticCollection: VSC.DiagnosticCollection;
 
@@ -36,14 +38,14 @@ export function activate(ctx: VSC.ExtensionContext) {
 
     client = new LanguageClient(
         'amxxpawn',
-        'AMXXPawn Language Service',
+        t('AMXXPawn Language Service'),
         serverOptions,
         clientOptions
     );
 
     client.start();
 
-    const outputChannel = VSC.window.createOutputChannel('AMXXPC Output / AMXXPawn');
+    const outputChannel = VSC.window.createOutputChannel(t('AMXXPC Output / AMXXPawn'));
     diagnosticCollection = VSC.languages.createDiagnosticCollection('amxxpawn');
     
     const commandCompile = VSC.commands.registerCommand('amxxpawn.compile', Commands.compile.bind(null, outputChannel, diagnosticCollection));

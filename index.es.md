@@ -1,0 +1,112 @@
+---
+layout: default
+---
+
+# AMXXPawn Language Service para Visual Studio Code
+
+<p align="center">
+  <a href="/amxxpawn-language/">English</a> |
+  <a href="/amxxpawn-language/index.es.html">Espanol</a> |
+  <a href="/amxxpawn-language/index.pt-BR.html">Portugues (Brasil)</a> |
+  <a href="/amxxpawn-language/CHANGELOG.html">Changelog</a>
+</p>
+
+Este proyecto revive y moderniza la experiencia de desarrollo para scripters de **AMX Mod X**. Si te gusta crear plugins para Half-Life, Counter-Strike 1.6 y otros mods GoldSrc pero echas de menos herramientas modernas, esta extension es para ti.
+
+Convierte VS Code en un IDE potente para Pawn, con funciones que antes eran exclusivas de lenguajes mas nuevos.
+
+## ✨ Novedades (v1.1.9)
+
+### Fixed
++- Se corrigio el autocomplete que mostraba sugerencias irrelevantes (busqueda "fuzzy") al escribir parametros de funciones. La logica se cambio a una busqueda estricta de "comienza con", lo que da sugerencias mas limpias y precisas.
+
+---
+
+## ✨ Funcionalidades principales
+
+Esta extension va mucho mas alla de un simple resaltado de sintaxis. Ofrece un **Language Server** completo con:
+
++- **IntelliSense avanzado:** Autocompletado para funciones, constantes y variables.
++- **Navegacion inteligente de codigo (`Go to Definition`):** Presiona `Ctrl+Click` para ir a la definicion de:
++  - Funciones (incluyendo `public`, `stock`, `native` y con prefijo `@`).
++  - Constantes definidas con `#define`.
++  - Variables globales.
++  - **Funciones en Tasks:** Navega directo a la funcion cuando su nombre se pasa como texto (por ejemplo, `set_task_ex(..., "mi_funcion", ...)`).
++- **Informacion al pasar el mouse (Hover):** Pasa el mouse sobre una funcion o variable para ver su definicion completa.
++- **Diagnosticos en tiempo real:** La extension avisa si un `#include` no se puede encontrar, ayudando a corregir errores antes de compilar.
++- **Compilacion integrada:** Compila tus plugins directamente desde VS Code con un solo comando.
+
+## 🚀 Instalacion
+
+1. Instala [Visual Studio Code](https://code.visualstudio.com/).
+2. Abre la pestaña de **Extensiones** (`Ctrl+Shift+X`).
+3. Busca `AMXXPawn Language Service`.
+4. Haz clic en **Instalar**.
+5. Recarga VS Code y listo.
+
+Tambien puedes instalarla desde la [pagina del Marketplace](https://marketplace.visualstudio.com/items?itemName=iceeedR.amxx-pawn-language-editor).
+
+## ⚙️ Configuracion (Paso esencial)
+
+Para que la extension funcione al 100%, **debes** indicar donde estan tu compilador AMXX y los archivos `include`.
+
+1. Abre la configuracion de VS Code (`Ctrl + ,`).
+2. Haz clic en el icono de "Abrir settings.json" en la esquina superior derecha.
+3. Agrega las siguientes propiedades a tu `settings.json`:
+
+```json
+{
+    // Ruta al ejecutable del compilador amxxpc.
+    "amxxpawn.compiler.executablePath": "C:\\ruta\\a\\tu\\compiler\\amxxpc.exe",
+
+    // Lista de carpetas donde la extension buscara archivos .inc.
+    // ESENCIAL para que funcione "Go to Definition" de funciones nativas.
+    "amxxpawn.compiler.includePaths": [
+        "C:\\ruta\\a\\tu\\compiler\\include"
+    ],
+
+    // --- CONFIGURACION RECOMENDADA ---
+    // Para un autocomplete mas limpio e inteligente,
+    // desactiva sugerencias genericas basadas en palabras del archivo.
+    "editor.wordBasedSuggestions": "off"
+}
+```
+
+**IMPORTANTE para usuarios Windows:** En archivos JSON, usa doble barra invertida (`\\`) o barras normales (`/`) en las rutas.
+
+**Ejemplo practico:**
+
+```json
+{
+    "amxxpawn.compiler.executablePath": "C:/AMXX/compiler/amxxpc.exe",
+    "amxxpawn.compiler.includePaths": [
+        "C:/AMXX/compiler/include"
+    ]
+}
+```
+
+## ⌨️ Comandos disponibles
+
+Abre la Paleta de Comandos (`Ctrl+Shift+P`) y escribe `AMXXPawn` para ver los comandos:
+
++- **AMXXPawn: Compile Plugin** — Compila el archivo `.sma` abierto usando el `executablePath` definido en la configuracion.
++- **AMXXPawn: Compile Plugin Local** — Busca y usa un `amxxpc.exe` ubicado en la misma carpeta del `.sma` que estas editando.
+
+## 🛠️ Para desarrolladores y contribuidores
+
+Este proyecto moderniza una base de codigo heredada y ahora usa TypeScript y las APIs mas recientes de `vscode-languageclient`. Las contribuciones son bienvenidas.
+
+**Para compilar y probar localmente:**
+
+1. Clona el repositorio: `git clone https://github.com/NiceFeatures/amxxpawn-language.git`
+2. Instala dependencias: `npm install`
+3. Compila el proyecto: `npm run compile`
+4. Abre el proyecto en VS Code y presiona `F5` para iniciar una sesion de depuracion.
+
+## 🙏 Agradecimientos
+
+Este proyecto es una continuacion y modernizacion del increible trabajo hecho originalmente por **KliPPy**. Todo el credito por la base solida y la idea original es para el.
+
+## 📄 Licencia
+
+Este proyecto esta licenciado bajo **GPL-3.0**. Consulta el archivo `LICENSE` para mas detalles.

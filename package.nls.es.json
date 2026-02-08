@@ -1,0 +1,18 @@
+{
+  "extension.displayName": "Servicio de lenguaje AMXXPawn",
+  "extension.description": "Servicio de lenguaje AMXXPawn",
+  "configuration.title": "Configuracion de AMXXPawn",
+  "configuration.language.reparseInterval.description": "El intervalo mas corto permitido entre dos reprocesamientos de sintaxis del mismo archivo",
+  "configuration.language.webApiLinks.description": "Si las sentencias #include que contienen nombres de archivo del paquete AMXX deben enlazar a la referencia Web API",
+  "configuration.compiler.executablePath.description": "Ubicacion del compilador",
+  "configuration.compiler.includePaths.description": "Una matriz de cadenas con rutas de include para el compilador",
+  "configuration.compiler.options.description": "Una matriz de opciones adicionales que deben pasarse al compilador",
+  "configuration.compiler.showInfoMessages.description": "Muestra informacion adicional como argumentos del comando y codigo de salida al compilar",
+  "configuration.compiler.reformatOutput.description": "Si la salida de amxxpc debe reformatearse para que sea mas legible",
+  "configuration.compiler.outputType.description": "Donde deben generarse los archivos .amxx. Puede ser:\n - 'source' (igual que la entrada)\n - 'path' (especificado en amxxpawn.compiler.outputPath)",
+  "configuration.compiler.outputPath.description": "Si amxxpawn.compiler.outputType esta en 'path', use esta ruta para generar archivos .amxx",
+  "configuration.compiler.switchToOutput.description": "Cambiar a la pestaña 'Output' al compilar",
+  "command.category": "AMXXPawn",
+  "command.compile.title": "Compilar plugin",
+  "command.compileLocal.title": "Compilar plugin local"
+}

@@ -7,6 +7,8 @@ import * as VSC from 'vscode';
 import * as Settings from '../common/settings-types';
 import * as Helpers from '../common/helpers';
 
+const t = VSC.l10n.t;
+
 interface OutputDiagnostic {
     type: string;
     startLine: number;
@@ -24,19 +26,19 @@ function doCompile(executablePath: string, inputPath: string, compilerSettings: 
     const startTime = process.hrtime();
 
     let outputPath = '';
-    const workspaceRoot = VSC.workspace.rootPath;
+    const workspaceRoot = VSC.workspace.workspaceFolders?.[0]?.uri.fsPath;
 
     if (compilerSettings.outputType === 'path') {
         const resolvedPath = Helpers.resolvePathVariables(compilerSettings.outputPath, workspaceRoot, inputPath);
         if (!resolvedPath || !FS.existsSync(resolvedPath)) {
-            outputChannel.appendLine(`❌ Erro: O caminho de saída "${resolvedPath}" não existe. Compilação abortada.`);
+            outputChannel.appendLine(t('❌ Error: Output path "{0}" does not exist. Compilation aborted.', resolvedPath));
             return;
         }
         outputPath = Path.join(resolvedPath, Path.basename(inputPath, Path.extname(inputPath)) + '.amxx');
     } else if (compilerSettings.outputType === 'source') {
         outputPath = Path.join(Path.dirname(inputPath), Path.basename(inputPath, Path.extname(inputPath)) + '.amxx');
     } else {
-        outputChannel.appendLine('❌ Erro: O valor da configuração \'amxxpawn.compiler.outputType\' é inválido.');
+        outputChannel.appendLine(t('❌ Error: The value of setting \'amxxpawn.compiler.outputType\' is invalid.'));
         return;
     }
 
@@ -53,7 +55,7 @@ function doCompile(executablePath: string, inputPath: string, compilerSettings: 
     };
 
     if (compilerSettings.showInfoMessages === true) {
-        outputChannel.appendLine(`Iniciando amxxpc: "${executablePath}" ${compilerArgs.join(' ')}\n`);
+        outputChannel.appendLine(t('Starting amxxpc: "{0}" {1}\n', executablePath, compilerArgs.join(' ')));
     }
 
     let compilerStdout = '';
@@ -65,11 +67,11 @@ function doCompile(executablePath: string, inputPath: string, compilerSettings: 
     });
 
     amxxpcProcess.stderr.on('data', (data) => {
-        outputChannel.append('stderr: ' + data.toString());
+        outputChannel.append(t('stderr: {0}', data.toString()));
     });
 
     amxxpcProcess.on('error', (err) => {
-        outputChannel.appendLine(`❌ Falha ao iniciar amxxpc: ${err.message}`);
+        outputChannel.appendLine(t('❌ Failed to start amxxpc: {0}', err.message));
     });
 
     amxxpcProcess.on('close', (exitCode) => {
@@ -110,18 +112,18 @@ function doCompile(executablePath: string, inputPath: string, compilerSettings: 
 
         if (hasErrors || hasWarnings) {
             outputChannel.appendLine('--------------------------------------------------');
-            outputChannel.appendLine('Relatório da Compilação:');
+            outputChannel.appendLine(t('Compilation Report:'));
             outputChannel.appendLine('--------------------------------------------------\n');
         }
 
         for (const [filePath, data] of outputData.entries()) {
             const resourceDiagnostics: VSC.Diagnostic[] = [];
             
-            outputChannel.appendLine(`📄 Arquivo: ${filePath}`);
+            outputChannel.appendLine(t('📄 File: {0}', filePath));
             
             data.diagnostics.forEach((diag) => {
                 const type = diag.type.toUpperCase();
-                outputChannel.appendLine(`  [${type}] Linha ${diag.startLine}: ${diag.message}`);
+                outputChannel.appendLine(t('  [{0}] Line {1}: {2}', type, diag.startLine, diag.message));
                 
                 const range = new VSC.Range(diag.startLine - 1, 0, (diag.endLine || diag.startLine) - 1, Number.MAX_VALUE);
                 const severity = type === 'ERROR' ? VSC.DiagnosticSeverity.Error : VSC.DiagnosticSeverity.Warning;
@@ -140,41 +142,41 @@ function doCompile(executablePath: string, inputPath: string, compilerSettings: 
         const totalSizeMatch = compilerStdout.match(/Total requirements:\s*(\d+)\s*bytes/);
 
         if (hasErrors) {
-            outputChannel.appendLine(`❌ Compilação falhou após ${compilationTime} segundos. Veja os erros acima.`);
+            outputChannel.appendLine(t('❌ Compilation failed after {0} seconds. See errors above.', compilationTime));
         } else if (hasWarnings) {
-            outputChannel.appendLine(`⚠️  Compilação concluída com avisos em ${compilationTime} segundos.`);
-            outputChannel.appendLine(`   Saída gerada em: ${outputPath}`);
+            outputChannel.appendLine(t('⚠️  Compilation completed with warnings in {0} seconds.', compilationTime));
+            outputChannel.appendLine(t('   Output generated at: {0}', outputPath));
         } else if (/Done\./.test(compilerStdout)) {
              try {
                 const stats = FS.statSync(outputPath);
                 const fileSizeInKB = (stats.size / 1024).toFixed(2);
 
                 outputChannel.appendLine('╔════════════════════════════════════════════════');
-                outputChannel.appendLine('║ ✅  Compilação Concluída com Sucesso!');
+                outputChannel.appendLine(t('║ ✅  Compilation Succeeded!'));
                 outputChannel.appendLine('╠════════════════════════════════════════════════');
-                outputChannel.appendLine(`║ Plugin:     ${Path.basename(outputPath)}`);
-                outputChannel.appendLine(`║ Saída:      ${outputPath}`);
-                outputChannel.appendLine(`║ Tamanho:    ${fileSizeInKB} KB`);
-                outputChannel.appendLine(`║ Tempo:      ${compilationTime} segundos`);
+                outputChannel.appendLine(t('║ Plugin:     {0}', Path.basename(outputPath)));
+                outputChannel.appendLine(t('║ Output:     {0}', outputPath));
+                outputChannel.appendLine(t('║ Size:       {0} KB', fileSizeInKB));
+                outputChannel.appendLine(t('║ Time:       {0} seconds', compilationTime));
                 
                 if (headerSizeMatch || codeSizeMatch || dataSizeMatch) {
                     outputChannel.appendLine('╟────────────────────────────────────────────────');
-                    outputChannel.appendLine('║ Estatísticas do Compilador:');
-                    if(headerSizeMatch) outputChannel.appendLine(`║   Cabeçalho:  ${headerSizeMatch[1]} bytes`);
-                    if(codeSizeMatch)   outputChannel.appendLine(`║   Código:     ${codeSizeMatch[1]} bytes`);
-                    if(dataSizeMatch)   outputChannel.appendLine(`║   Dados:      ${dataSizeMatch[1]} bytes`);
-                    if(totalSizeMatch)  outputChannel.appendLine(`║   Total Req.: ${totalSizeMatch[1]} bytes`);
+                    outputChannel.appendLine(t('║ Compiler Statistics:'));
+                    if(headerSizeMatch) outputChannel.appendLine(t('║   Header:     {0} bytes', headerSizeMatch[1]));
+                    if(codeSizeMatch)   outputChannel.appendLine(t('║   Code:       {0} bytes', codeSizeMatch[1]));
+                    if(dataSizeMatch)   outputChannel.appendLine(t('║   Data:       {0} bytes', dataSizeMatch[1]));
+                    if(totalSizeMatch)  outputChannel.appendLine(t('║   Total Req.: {0} bytes', totalSizeMatch[1]));
                 }
 
                 outputChannel.appendLine('╚════════════════════════════════════════════════\n');
 
             } catch (error) {
-                outputChannel.appendLine(`✅ Compilação Concluída em ${compilationTime}s. Saída: ${outputPath}\n`);
+                outputChannel.appendLine(t('✅ Compilation finished in {0}s. Output: {1}\n', compilationTime, outputPath));
             }
         }
 
         if (compilerSettings.showInfoMessages === true && exitCode !== 0) {
-            outputChannel.appendLine(`\nProcesso amxxpc finalizado com código ${exitCode}.`);
+            outputChannel.appendLine(t('\namxxpc process finished with exit code {0}.', exitCode));
         }
     });
 }
@@ -184,24 +186,24 @@ export function compile(outputChannel: VSC.OutputChannel, diagnosticCollection: 
     outputChannel.clear();
     const config = VSC.workspace.getConfiguration('amxxpawn');
     const compilerSettings = config.get<Settings.CompilerSettings>('compiler');
-    if (!compilerSettings) { outputChannel.appendLine('❌ Configurações do compilador não encontradas.'); return; }
+    if (!compilerSettings) { outputChannel.appendLine(t('❌ Compiler settings not found.')); return; }
     if (compilerSettings.switchToOutput === true) { outputChannel.show(true); }
     const editor = VSC.window.activeTextEditor;
-    if (!editor) { outputChannel.appendLine('Nenhuma janela com código Pawn ativa.'); return; }
-    if (editor.document.uri.scheme !== 'file') { outputChannel.appendLine('O arquivo de entrada não está no disco.'); return; }
+    if (!editor) { outputChannel.appendLine(t('No active Pawn editor.')); return; }
+    if (editor.document.uri.scheme !== 'file') { outputChannel.appendLine(t('Input file is not on disk.')); return; }
     const inputPath = editor.document.uri.fsPath;
-    const executablePath = Helpers.resolvePathVariables(compilerSettings.executablePath, VSC.workspace.rootPath, inputPath);
-    if (!executablePath || !FS.existsSync(executablePath)) { outputChannel.appendLine(`❌ Compilador não encontrado em: ${executablePath}. Verifique suas configurações.`); return; }
+    const executablePath = Helpers.resolvePathVariables(compilerSettings.executablePath, workspaceRoot, inputPath);
+    if (!executablePath || !FS.existsSync(executablePath)) { outputChannel.appendLine(t('❌ Compiler not found at: {0}. Check your settings.', executablePath)); return; }
     const tryCompile = () => {
         FS.access(executablePath, FS.constants.X_OK, (err) => {
-            if (err) { outputChannel.appendLine('❌ Não foi possível acessar o amxxpc. Verifique o caminho e as permissões de execução.'); return; }
+            if (err) { outputChannel.appendLine(t('❌ Could not access amxxpc. Check the path and execute permissions.')); return; }
             doCompile(executablePath, inputPath, compilerSettings, outputChannel, diagnosticCollection);
         });
     };
     if (editor.document.isDirty) {
         editor.document.save().then((isSuccess) => {
             if (isSuccess) tryCompile();
-            else outputChannel.appendLine('❌ Falha ao salvar o arquivo.');
+            else outputChannel.appendLine(t('❌ Failed to save the file.'));
         });
     } else {
         tryCompile();
@@ -211,10 +213,10 @@ export function compileLocal(outputChannel: VSC.OutputChannel, diagnosticCollect
     outputChannel.clear();
     const config = VSC.workspace.getConfiguration('amxxpawn');
     const compilerSettings = config.get<Settings.CompilerSettings>('compiler');
-    if(!compilerSettings) { outputChannel.appendLine('Configurações do compilador não encontradas.'); return; }
+    if(!compilerSettings) { outputChannel.appendLine(t('Compiler settings not found.')); return; }
     if(compilerSettings.switchToOutput === true) { outputChannel.show(true); }
     const editor = VSC.window.activeTextEditor;
-    if(!editor || editor.document.uri.scheme !== 'file') { outputChannel.appendLine('Nenhum arquivo Pawn válido aberto.'); return; }
+    if(!editor || editor.document.uri.scheme !== 'file') { outputChannel.appendLine(t('No valid Pawn file is open.')); return; }
     const inputPath = editor.document.uri.fsPath;
     const executableDir = Path.dirname(inputPath);
     FS.readdir(executableDir, (err, files) => {
@@ -224,8 +226,8 @@ export function compileLocal(outputChannel: VSC.OutputChannel, diagnosticCollect
         if(potentialFiles.includes('amxxpc.exe')) {
             executablePath = Path.join(executableDir, 'amxxpc.exe');
         } else {
-            if(potentialFiles.length === 0) { outputChannel.appendLine(`Nenhum 'amxxpc' encontrado em '${executableDir}'.`); return; }
-            if(potentialFiles.length > 1) { outputChannel.appendLine(`Resultado ambíguo: mais de um arquivo começando com 'amxxpc' em '${executableDir}'.`); return; }
+            if(potentialFiles.length === 0) { outputChannel.appendLine(t('No \'amxxpc\' found in \'{0}\'.', executableDir)); return; }
+            if(potentialFiles.length > 1) { outputChannel.appendLine(t('Ambiguous result: more than one file starting with \'amxxpc\' in \'{0}\'.', executableDir)); return; }
             executablePath = Path.join(executableDir, potentialFiles[0]);
         }
         doCompile(executablePath, inputPath, compilerSettings, outputChannel, diagnosticCollection);
