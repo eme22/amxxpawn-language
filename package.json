@@ -2,8 +2,8 @@
     "name": "amxx-pawn-language-editor",
     "displayName": "%extension.displayName%",
     "description": "%extension.description%",
-    "version": "1.1.9",
-    "publisher": "iceeedR",
+    "version": "1.1.10",
+    "publisher": "eme22",
     "license": "GPL-3.0",
     "icon": "images/extension-logo.png",
     "galleryBanner": {
@@ -35,7 +35,11 @@
         "Linters",
         "Snippets"
     ],
-    "activationEvents": [],
+    "activationEvents": [
+        "onLanguage:amxxpawn",
+        "onCommand:amxxpawn.compile",
+        "onCommand:amxxpawn.compileLocal"
+    ],
     "main": "./build/client/client",
     "contributes": {
         "languages": [
@@ -166,13 +170,16 @@
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
-        "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./"
+        "compile": "node esbuild.js",
+        "watch": "node esbuild.js --watch",
+        "package": "vsce package"
     },
     "devDependencies": {
         "@types/node": "^25.2.2",
         "@types/vscode": "^1.109.0",
+        "@vscode/vsce": "^3.7.1",
         "@vscode/test-electron": "^2.5.2",
+        "esbuild": "^0.25.0",
         "typescript": "^5.9.3"
     },
     "dependencies": {

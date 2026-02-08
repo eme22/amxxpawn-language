@@ -37,7 +37,8 @@ import { resolvePathVariables } from '../common/helpers';
 
 const connection = createConnection(ProposedFeatures.all);
 const documentsManager = new TextDocuments(TextDocument);
-L10n.config({ uri: __dirname });
+const l10nBundlePath = Path.join(__dirname, '..', '..', 'l10n', 'bundle.l10n.json');
+L10n.config({ uri: URI.file(l10nBundlePath).toString() });
 
 let syncedSettings: Settings.SyncedSettings;
 let dependencyManager: DM.FileDependencyManager = new DM.FileDependencyManager();

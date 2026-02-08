@@ -1,8 +1,12 @@
 .vscode/**
+.git/**
+.github/**
 typings/**
+node_modules/**
 src/**
 **/*.ts
 **/*.map
 .gitignore
 tsconfig.json
+package-lock.json
 **/*.log

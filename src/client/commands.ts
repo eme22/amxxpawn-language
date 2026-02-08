@@ -192,6 +192,7 @@ export function compile(outputChannel: VSC.OutputChannel, diagnosticCollection: 
     if (!editor) { outputChannel.appendLine(t('No active Pawn editor.')); return; }
     if (editor.document.uri.scheme !== 'file') { outputChannel.appendLine(t('Input file is not on disk.')); return; }
     const inputPath = editor.document.uri.fsPath;
+    const workspaceRoot = VSC.workspace.workspaceFolders?.[0]?.uri.fsPath;
     const executablePath = Helpers.resolvePathVariables(compilerSettings.executablePath, workspaceRoot, inputPath);
     if (!executablePath || !FS.existsSync(executablePath)) { outputChannel.appendLine(t('❌ Compiler not found at: {0}. Check your settings.', executablePath)); return; }
     const tryCompile = () => {
